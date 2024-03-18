@@ -25,6 +25,7 @@ class ProductCreate(BaseModel):
 
 # Classe de modelo Pydantic para representar a resposta da criação de produto
 class ProductResponse(BaseModel):
+    id: str
     name: str
     price: float
     quantity: int
@@ -52,17 +53,17 @@ def format(pk: str):
     }
 
 # Operação de leitura de um produto específico
-@router.get('/products/{pk}', response_model=ProductResponse)
-def get(pk: str):
+@router.get('/products/{id}', response_model=ProductResponse)
+def get(id: str):
     try:
-        product = Product.get(pk)
+        product = Product.get(id)
         if product:
-            return product
+            # Modificação aqui para incluir o campo 'id' na resposta
+            return ProductResponse(id=product.pk, name=product.name, price=product.price, quantity=product.quantity)
         else:
             raise HTTPException(status_code=404, detail="Produto não encontrado")
     except Exception as e:
         raise HTTPException(status_code=500, detail="Ocorreu um erro interno ao buscar o produto")
-
 # Operação de exclusão de produto
 @router.delete('/products/{pk}')
 def delete_product(pk: str):

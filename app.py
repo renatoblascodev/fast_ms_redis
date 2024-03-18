@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from modules.produtos import router as produtos_router
+from modules.orders import router as  orders_router
 
 app = FastAPI()
 
@@ -13,7 +14,8 @@ app.add_middleware(
 )
 
 
-# Adicionar o roteador de produtos ao aplicativo
+# Adicionar o roteador de produtos os modulos desejados
 app.include_router(produtos_router)
+app.include_router(orders_router)
 
 
