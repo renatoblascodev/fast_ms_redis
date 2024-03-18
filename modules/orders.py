@@ -56,8 +56,14 @@ async def create(request: Request):
             status='pending'
         )
         order.save()
+
+        order_completed(order)
+
         return order
-        
+
+def order_completed(order: Order):
+    order.status = 'completed'
+    order.save() 
 
 # Operação de leitura de todos os produtos
 @router.get('/orders', response_model=List[OrderResponse])
