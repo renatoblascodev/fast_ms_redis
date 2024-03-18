@@ -2,12 +2,13 @@ import pdb
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter
+from fastapi.background import BackgroundTasks
 from typing import List
 from connection import redis
 from redis_om import HashModel
 from pydantic import BaseModel
 from starlette.requests import Request
-import requests
+import requests, time
 import httpx
 
 router = APIRouter()
@@ -40,7 +41,7 @@ class OrderResponse(BaseModel):
 
 # Operação de criação de ordem   
 @router.post('/orders')
-async def create(request: Request): 
+async def create(request: Request, background_tasks: BackgroundTasks): 
     data = await request.json()
     prod =  data['id']
     endpoint_produto = f"http://localhost:8000/products/{prod}"
@@ -57,11 +58,14 @@ async def create(request: Request):
         )
         order.save()
 
-        order_completed(order)
+        # order_completed(order) 
+        # Coloca na fila de execucao
+        background_tasks.add_task(order_completed, order)
 
         return order
 
 def order_completed(order: Order):
+    time.sleep(5) # Aguardar 5 segundos para retornar.
     order.status = 'completed'
     order.save() 
 
@@ -84,7 +88,7 @@ def format(pk: str):
     }
 
 # Operação de leitura de um produto específico
-@router.get('/orders/{pk}', response_model=OrderResponse)
+@router.get('/orders/{pk}')
 def get(pk: str):
     try:
         order = Order.get(pk)
