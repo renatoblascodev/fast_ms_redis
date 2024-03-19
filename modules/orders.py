@@ -68,6 +68,7 @@ def order_completed(order: Order):
     time.sleep(5) # Aguardar 5 segundos para retornar.
     order.status = 'completed'
     order.save() 
+    redis.xadd('order_completed', order.dict(), '*')
 
 # Operação de leitura de todos os produtos
 @router.get('/orders', response_model=List[OrderResponse])
